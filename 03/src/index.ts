@@ -1,13 +1,12 @@
 import express, { Request, Response } from "express";
 import {
-  Cours,
+  Course,
   RequestBody,
   RequestParams,
   RequestParamsBody,
   RequestQuery,
 } from "./types";
 import { CourseViewModel } from "./models/CourseViewModels";
-import { title } from "process";
 import { URIParamsIdCourseModel } from "./models/URIParamsIdCourseModels";
 const app = express();
 const port = process.env.PORT || 3000;
@@ -16,7 +15,7 @@ const appMiddelware = express.json();
 
 app.use(appMiddelware);
 
-const db: { courses: Array<Cours> } = {
+const db: { courses: Array<Course> } = {
   courses: [
     { id: 1, title: "front-end" },
     { id: 2, title: "back-end" },
@@ -32,6 +31,10 @@ enum HTTP_STATUS {
   NOT_FOUND_404 = 404,
 }
 
+const getCourseViewModel = (dbCourse: Course): CourseViewModel => {
+  return { id: dbCourse.id, title: dbCourse.title };
+};
+
 app.get("/", (req: Request, res: Response) => {
   res.send("Hello World!");
 });
@@ -46,7 +49,9 @@ app.post(
     const createCours = { id: +new Date(), title: req.body.title };
 
     db.courses.push(createCours);
-    res.status(HTTP_STATUS.CREATED_201).json(createCours);
+    res
+      .status(HTTP_STATUS.CREATED_201)
+      .json({ id: createCours.id, title: createCours.title });
   }
 );
 
@@ -60,11 +65,7 @@ app.get(
         (c) => c.title.indexOf(req.query.title) > -1
       );
     }
-    res.json(
-      foudCoursTitle.map((db) => {
-        return { id: db.id, title: db.title };
-      })
-    );
+    res.json(foudCoursTitle.map(getCourseViewModel));
   }
 );
 
@@ -83,7 +84,7 @@ app.get(
       return;
     }
 
-    res.json({ id: foundCours.id, title: foundCours.title });
+    res.json(getCourseViewModel(foundCours));
   }
 );
 
@@ -122,7 +123,7 @@ app.put(
 
     foundCours.title = req.body.title;
 
-    res.json(foundCours);
+    res.json(getCourseViewModel(foundCours));
   }
 );
 

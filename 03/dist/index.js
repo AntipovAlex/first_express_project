@@ -23,6 +23,9 @@ var HTTP_STATUS;
     HTTP_STATUS[HTTP_STATUS["BAD_REQUEST_400"] = 400] = "BAD_REQUEST_400";
     HTTP_STATUS[HTTP_STATUS["NOT_FOUND_404"] = 404] = "NOT_FOUND_404";
 })(HTTP_STATUS || (HTTP_STATUS = {}));
+const getCourseViewModel = (dbCourse) => {
+    return { id: dbCourse.id, title: dbCourse.title };
+};
 app.get("/", (req, res) => {
     res.send("Hello World!");
 });
@@ -32,14 +35,16 @@ app.get("/users", (req, res) => {
 app.post("/course", (req, res) => {
     const createCours = { id: +new Date(), title: req.body.title };
     db.courses.push(createCours);
-    res.status(HTTP_STATUS.CREATED_201).json(createCours);
+    res
+        .status(HTTP_STATUS.CREATED_201)
+        .json({ id: createCours.id, title: createCours.title });
 });
 app.get("/course", (req, res) => {
     let foudCoursTitle = db.courses;
     if (req.query.title) {
         foudCoursTitle = foudCoursTitle.filter((c) => c.title.indexOf(req.query.title) > -1);
     }
-    res.json(foudCoursTitle);
+    res.json(foudCoursTitle.map(getCourseViewModel));
 });
 app.get("/course/:id", (req, res) => {
     const foundCours = db.courses.find((cours) => cours.id === Number(req.params.id));
@@ -47,7 +52,7 @@ app.get("/course/:id", (req, res) => {
         res.sendStatus(HTTP_STATUS.NOT_FOUND_404);
         return;
     }
-    res.json(foundCours);
+    res.json(getCourseViewModel(foundCours));
 });
 app.delete("/course/:id", (req, res) => {
     db.courses = db.courses.filter((cours) => cours.id !== Number(req.params.id));
@@ -64,7 +69,7 @@ app.put("/course/:id", (req, res) => {
         return;
     }
     foundCours.title = req.body.title;
-    res.json(foundCours);
+    res.json(getCourseViewModel(foundCours));
 });
 app.listen(port, () => {
     console.log(`Example app listening on port ${port}`);

@@ -1,6 +1,6 @@
 import { Request } from "express";
 
-export type Cours = { id: number; title: string };
+export type Course = { id: number; title: string };
 
 export type RequestBody<B> = Request<{}, {}, B>;
 export type RequestQuery<Q> = Request<{}, {}, {}, Q>;
