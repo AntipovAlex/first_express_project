@@ -2,7 +2,6 @@ import express, { Response } from "express";
 import { CourseViewModel } from "../models/CourseViewModels";
 import { URIParamsIdCourseModel } from "../models/URIParamsIdCourseModels";
 import {
-  DBType,
   HTTP_STATUS,
   RequestBody,
   RequestParams,
@@ -10,16 +9,15 @@ import {
   RequestQuery,
 } from "../types";
 import { getCourseViewModel } from "../utils/getCourseViewModel";
+import { coursesRepository } from "../repositories/courses-repositories";
 
-export const getCoursesRouter = (db: DBType) => {
+export const getCoursesRouter = () => {
   const router = express.Router();
 
   router.post(
     "/",
     (req: RequestBody<{ title: string }>, res: Response<CourseViewModel>) => {
-      const createCours = { id: +new Date(), title: req.body.title };
-
-      db.courses.push(createCours);
+      const createCours = coursesRepository.createCourse(req.body.title);
       res
         .status(HTTP_STATUS.CREATED_201)
         .json({ id: createCours.id, title: createCours.title });
@@ -32,13 +30,8 @@ export const getCoursesRouter = (db: DBType) => {
       req: RequestQuery<{ title: string }>,
       res: Response<CourseViewModel[]>
     ) => {
-      let foudCoursTitle = db.courses;
+      const foudCoursTitle = coursesRepository.findCourse(req.query.title);
 
-      if (req.query.title) {
-        foudCoursTitle = foudCoursTitle.filter(
-          (c) => c.title.indexOf(req.query.title) > -1
-        );
-      }
       res.json(foudCoursTitle.map(getCourseViewModel));
     }
   );
@@ -49,16 +42,16 @@ export const getCoursesRouter = (db: DBType) => {
       req: RequestParams<URIParamsIdCourseModel>,
       res: Response<CourseViewModel>
     ) => {
-      const foundCours = db.courses.find(
-        (cours) => cours.id === Number(req.params.id)
+      const foundCourse = coursesRepository.findCourseById(
+        Number(req.params.id)
       );
 
-      if (!foundCours) {
+      if (!foundCourse) {
         res.sendStatus(HTTP_STATUS.NOT_FOUND_404);
         return;
       }
 
-      res.json(getCourseViewModel(foundCours));
+      res.json(getCourseViewModel(foundCourse));
     }
   );
 
@@ -68,11 +61,13 @@ export const getCoursesRouter = (db: DBType) => {
       req: RequestParams<URIParamsIdCourseModel>,
       res: Response<CourseViewModel>
     ) => {
-      db.courses = db.courses.filter(
-        (cours) => cours.id !== Number(req.params.id)
+      const isDeleteCourse = coursesRepository.deleteCourse(
+        Number(req.params.id)
       );
 
-      res.sendStatus(HTTP_STATUS.NO_CONTENT_204);
+      isDeleteCourse
+        ? res.sendStatus(HTTP_STATUS.NO_CONTENT_204)
+        : res.sendStatus(HTTP_STATUS.NOT_FOUND_404);
     }
   );
 
@@ -82,22 +77,27 @@ export const getCoursesRouter = (db: DBType) => {
       req: RequestParamsBody<URIParamsIdCourseModel, { title: string }>,
       res: Response<CourseViewModel>
     ) => {
+      const updateCourse = coursesRepository.updateCourse(
+        Number(req.params.id),
+        req.body.title
+      );
       if (!req.body.title) {
         res.sendStatus(HTTP_STATUS.BAD_REQUEST_400);
         return;
       }
-      const foundCours = db.courses.find(
-        (cours) => cours.id === Number(req.params.id)
-      );
 
-      if (!foundCours) {
+      if (!updateCourse) {
         res.sendStatus(HTTP_STATUS.NOT_FOUND_404);
         return;
       }
 
-      foundCours.title = req.body.title;
+      if (updateCourse) {
+        const findCourse = coursesRepository.findCourseById(
+          Number(req.params.id)
+        );
 
-      res.json(getCourseViewModel(foundCours));
+        findCourse && res.json(getCourseViewModel(findCourse));
+      }
     }
   );
 

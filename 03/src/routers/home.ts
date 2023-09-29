@@ -1,7 +1,7 @@
 import express, { Request, Response } from "express";
 import { DBType } from "../types";
 
-export const getHomeRouter = (db: DBType) => {
+export const getHomeRouter = () => {
   const router = express.Router();
 
   router.get("/", (req: Request, res: Response) => {

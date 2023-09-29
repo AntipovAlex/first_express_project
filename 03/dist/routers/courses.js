@@ -7,46 +7,47 @@ exports.getCoursesRouter = void 0;
 const express_1 = __importDefault(require("express"));
 const types_1 = require("../types");
 const getCourseViewModel_1 = require("../utils/getCourseViewModel");
-const getCoursesRouter = (db) => {
+const courses_repositories_1 = require("../repositories/courses-repositories");
+const getCoursesRouter = () => {
     const router = express_1.default.Router();
     router.post("/", (req, res) => {
-        const createCours = { id: +new Date(), title: req.body.title };
-        db.courses.push(createCours);
+        const createCours = courses_repositories_1.coursesRepository.createCourse(req.body.title);
         res
             .status(types_1.HTTP_STATUS.CREATED_201)
             .json({ id: createCours.id, title: createCours.title });
     });
     router.get("/", (req, res) => {
-        let foudCoursTitle = db.courses;
-        if (req.query.title) {
-            foudCoursTitle = foudCoursTitle.filter((c) => c.title.indexOf(req.query.title) > -1);
-        }
+        const foudCoursTitle = courses_repositories_1.coursesRepository.findCourse(req.query.title);
         res.json(foudCoursTitle.map(getCourseViewModel_1.getCourseViewModel));
     });
     router.get("/:id", (req, res) => {
-        const foundCours = db.courses.find((cours) => cours.id === Number(req.params.id));
-        if (!foundCours) {
+        const foundCourse = courses_repositories_1.coursesRepository.findCourseById(Number(req.params.id));
+        if (!foundCourse) {
             res.sendStatus(types_1.HTTP_STATUS.NOT_FOUND_404);
             return;
         }
-        res.json((0, getCourseViewModel_1.getCourseViewModel)(foundCours));
+        res.json((0, getCourseViewModel_1.getCourseViewModel)(foundCourse));
     });
     router.delete("/:id", (req, res) => {
-        db.courses = db.courses.filter((cours) => cours.id !== Number(req.params.id));
-        res.sendStatus(types_1.HTTP_STATUS.NO_CONTENT_204);
+        const isDeleteCourse = courses_repositories_1.coursesRepository.deleteCourse(Number(req.params.id));
+        isDeleteCourse
+            ? res.sendStatus(types_1.HTTP_STATUS.NO_CONTENT_204)
+            : res.sendStatus(types_1.HTTP_STATUS.NOT_FOUND_404);
     });
     router.put("/:id", (req, res) => {
+        const updateCourse = courses_repositories_1.coursesRepository.updateCourse(Number(req.params.id), req.body.title);
         if (!req.body.title) {
             res.sendStatus(types_1.HTTP_STATUS.BAD_REQUEST_400);
             return;
         }
-        const foundCours = db.courses.find((cours) => cours.id === Number(req.params.id));
-        if (!foundCours) {
+        if (!updateCourse) {
             res.sendStatus(types_1.HTTP_STATUS.NOT_FOUND_404);
             return;
         }
-        foundCours.title = req.body.title;
-        res.json((0, getCourseViewModel_1.getCourseViewModel)(foundCours));
+        if (updateCourse) {
+            const findCourse = courses_repositories_1.coursesRepository.findCourseById(Number(req.params.id));
+            findCourse && res.json((0, getCourseViewModel_1.getCourseViewModel)(findCourse));
+        }
     });
     return router;
 };

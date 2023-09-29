@@ -10,5 +10,5 @@ const appMiddelware = express.json();
 
 app.use(appMiddelware);
 
-app.use("/courses", getCoursesRouter(db));
-app.use("/", getHomeRouter(db));
+app.use("/courses", getCoursesRouter());
+app.use("/", getHomeRouter());
