@@ -1,4 +1,5 @@
 import { Request } from "express";
+import { ValidationError } from "express-validator";
 
 export type Course = { id: number; title: string };
 
@@ -16,3 +17,7 @@ export enum HTTP_STATUS {
 }
 
 export type DBType = { courses: Array<Course> };
+
+export type Errors = {
+  errors: ValidationError[];
+};

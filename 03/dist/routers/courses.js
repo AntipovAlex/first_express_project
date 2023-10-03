@@ -8,9 +8,16 @@ const express_1 = __importDefault(require("express"));
 const types_1 = require("../types");
 const getCourseViewModel_1 = require("../utils/getCourseViewModel");
 const courses_repositories_1 = require("../repositories/courses-repositories");
+const express_validator_1 = require("express-validator");
+const title_validation_middleware_1 = require("../middlewares/title-validation-middleware");
 const getCoursesRouter = () => {
     const router = express_1.default.Router();
-    router.post("/", (req, res) => {
+    const titleValidation = (0, express_validator_1.body)("title")
+        .trim()
+        .notEmpty()
+        .isLength({ min: 3, max: 15 })
+        .withMessage("Title lenght should be from 3 to 15 symbols and should not be empty");
+    router.post("/", titleValidation, title_validation_middleware_1.titleValidationMiddleware, (req, res) => {
         const createCours = courses_repositories_1.coursesRepository.createCourse(req.body.title);
         res
             .status(types_1.HTTP_STATUS.CREATED_201)
@@ -34,7 +41,7 @@ const getCoursesRouter = () => {
             ? res.sendStatus(types_1.HTTP_STATUS.NO_CONTENT_204)
             : res.sendStatus(types_1.HTTP_STATUS.NOT_FOUND_404);
     });
-    router.put("/:id", (req, res) => {
+    router.put("/:id", titleValidation, title_validation_middleware_1.titleValidationMiddleware, (req, res) => {
         const updateCourse = courses_repositories_1.coursesRepository.updateCourse(Number(req.params.id), req.body.title);
         if (!req.body.title) {
             res.sendStatus(types_1.HTTP_STATUS.BAD_REQUEST_400);
