@@ -53,7 +53,10 @@ const getCoursesRouter = () => {
         }
         if (updateCourse) {
             const findCourse = courses_repositories_1.coursesRepository.findCourseById(Number(req.params.id));
-            findCourse && res.json((0, getCourseViewModel_1.getCourseViewModel)(findCourse));
+            findCourse &&
+                res
+                    .sendStatus(types_1.HTTP_STATUS.NO_CONTENT_204)
+                    .json((0, getCourseViewModel_1.getCourseViewModel)(findCourse));
         }
     });
     return router;

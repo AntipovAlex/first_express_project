@@ -1,4 +1,4 @@
-import express, { Response } from "express";
+import express, { Response, Request } from "express";
 import { CourseViewModel } from "../models/CourseViewModels";
 import { URIParamsIdCourseModel } from "../models/URIParamsIdCourseModels";
 import {
@@ -11,7 +11,7 @@ import {
 } from "../types";
 import { getCourseViewModel } from "../utils/getCourseViewModel";
 import { coursesRepository } from "../repositories/courses-repositories";
-import { body, validationResult } from "express-validator";
+import { body } from "express-validator";
 import { titleValidationMiddleware } from "../middlewares/title-validation-middleware";
 
 export const getCoursesRouter = () => {
@@ -114,7 +114,10 @@ export const getCoursesRouter = () => {
           Number(req.params.id)
         );
 
-        findCourse && res.json(getCourseViewModel(findCourse));
+        findCourse &&
+          res
+            .sendStatus(HTTP_STATUS.NO_CONTENT_204)
+            .json(getCourseViewModel(findCourse));
       }
     }
   );

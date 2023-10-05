@@ -4,5 +4,9 @@
 *.log
 
 # NPM
-node_modules/
+/node_modules
 package-lock.json
+
+# Webpack
+build/
+dist/
