@@ -1,47 +1,49 @@
-import { db } from "../db/db";
+import { error } from "console";
+import { client } from "../db/db";
+import { Course } from "../types";
+
+const coursesCollection = client.db("courses").collection("course");
 
 export const coursesRepository = {
-  findCourse(title: string) {
+  async findCourse(title: string): Promise<Course[]> {
     if (title) {
-      const foudCoursTitle = db.courses.filter(
-        (c) => c.title.indexOf(title) > -1
-      );
-
-      return foudCoursTitle;
+      return await coursesCollection
+        .find({ title: { $regex: title } })
+        .toArray();
     } else {
-      return db.courses;
+      return await coursesCollection.find({}).toArray();
     }
   },
 
-  createCourse(title: string) {
+  async createCourse(title: string): Promise<Course> {
     const createCours = { id: +new Date(), title: title };
+    const result = await coursesCollection.insertOne(createCours);
 
-    db.courses.push(createCours);
     return createCours;
   },
 
-  findCourseById(id: number) {
-    const foundCours = db.courses.find((cours) => cours.id === id);
-    return foundCours;
-  },
-
-  updateCourse(id: number, title: string) {
-    const foundCours = db.courses.find((cours) => cours.id === id);
+  async findCourseById(id: number): Promise<Course | undefined> {
+    const foundCours: Course | undefined = await coursesCollection.findOne({
+      id,
+    });
     if (foundCours) {
-      foundCours.title = title;
-      return true;
+      return foundCours;
     } else {
-      return false;
+      return undefined;
     }
   },
 
-  deleteCourse(id: number) {
-    for (let i = 0; i < db.courses.length; i++) {
-      if (db.courses[i].id === id) {
-        db.courses.splice(i, 1);
-        return true;
-      }
-    }
-    return false;
+  async updateCourse(id: number, title: string): Promise<boolean> {
+    const result = await coursesCollection.updateOne(
+      { id: id },
+      { $set: { title: title } }
+    );
+    return result.matchedCount === 1;
+  },
+
+  async deleteCourse(id: number): Promise<boolean> {
+    const result = await coursesCollection.deleteOne({ id: id });
+
+    return result.deletedCount === 1;
   },
 };

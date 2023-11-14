@@ -4,7 +4,7 @@ import { getHomeRouter } from "./routers/home";
 import { getTestRouter } from "./routers/delete-db";
 
 export const app = express();
-export const port = process.env.PORT || 3000;
+export const port = process.env.PORT || 5000;
 
 const appMiddelware = express.json();
 
