@@ -6,10 +6,12 @@ const types_1 = require("../types");
 const titleValidationMiddleware = (req, res, next) => {
     const errors = (0, express_validator_1.validationResult)(req);
     if (!errors.isEmpty()) {
-        res.status(types_1.HTTP_STATUS.BAD_REQUEST_400).json({ errors: errors.array() });
+        return res
+            .status(types_1.HTTP_STATUS.BAD_REQUEST_400)
+            .json({ errors: errors.array() });
     }
     else {
-        next();
+        return next();
     }
 };
 exports.titleValidationMiddleware = titleValidationMiddleware;

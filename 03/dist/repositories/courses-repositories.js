@@ -1,43 +1,52 @@
 "use strict";
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.coursesRepository = void 0;
 const db_1 = require("../db/db");
+const coursesCollection = db_1.client.db("courses").collection("course");
 exports.coursesRepository = {
     findCourse(title) {
-        if (title) {
-            const foudCoursTitle = db_1.db.courses.filter((c) => c.title.indexOf(title) > -1);
-            return foudCoursTitle;
-        }
-        else {
-            return db_1.db.courses;
-        }
+        return __awaiter(this, void 0, void 0, function* () {
+            if (title) {
+                return yield coursesCollection
+                    .find({ title: { $regex: title } })
+                    .toArray();
+            }
+            else {
+                return yield coursesCollection.find({}).toArray();
+            }
+        });
     },
-    createCourse(title) {
-        const createCours = { id: +new Date(), title: title };
-        db_1.db.courses.push(createCours);
-        return createCours;
+    createCourse(createCours) {
+        return __awaiter(this, void 0, void 0, function* () {
+            return yield coursesCollection.insertOne(createCours);
+        });
     },
     findCourseById(id) {
-        const foundCours = db_1.db.courses.find((cours) => cours.id === id);
-        return foundCours;
+        return __awaiter(this, void 0, void 0, function* () {
+            return yield coursesCollection.findOne({
+                id,
+            });
+        });
     },
     updateCourse(id, title) {
-        const foundCours = db_1.db.courses.find((cours) => cours.id === id);
-        if (foundCours) {
-            foundCours.title = title;
-            return true;
-        }
-        else {
-            return false;
-        }
+        return __awaiter(this, void 0, void 0, function* () {
+            const result = yield coursesCollection.updateOne({ id: id }, { $set: { title: title } });
+            return result.matchedCount === 1;
+        });
     },
     deleteCourse(id) {
-        for (let i = 0; i < db_1.db.courses.length; i++) {
-            if (db_1.db.courses[i].id === id) {
-                db_1.db.courses.splice(i, 1);
-                return true;
-            }
-        }
-        return false;
+        return __awaiter(this, void 0, void 0, function* () {
+            const result = yield coursesCollection.deleteOne({ id: id });
+            return result.deletedCount === 1;
+        });
     },
 };

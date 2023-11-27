@@ -9,8 +9,10 @@ export const titleValidationMiddleware = (
 ) => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
-    res.status(HTTP_STATUS.BAD_REQUEST_400).json({ errors: errors.array() });
+    return res
+      .status(HTTP_STATUS.BAD_REQUEST_400)
+      .json({ errors: errors.array() });
   } else {
-    next();
+    return next();
   }
 };

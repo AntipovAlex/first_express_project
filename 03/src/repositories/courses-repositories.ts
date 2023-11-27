@@ -1,4 +1,3 @@
-import { error } from "console";
 import { client } from "../db/db";
 import { Course } from "../types";
 
@@ -15,22 +14,14 @@ export const coursesRepository = {
     }
   },
 
-  async createCourse(title: string): Promise<Course> {
-    const createCours = { id: +new Date(), title: title };
-    const result = await coursesCollection.insertOne(createCours);
-
-    return createCours;
+  async createCourse(createCours: Omit<Course, "_id">): Promise<Course> {
+    return await coursesCollection.insertOne(createCours);
   },
 
   async findCourseById(id: number): Promise<Course | undefined> {
-    const foundCours: Course | undefined = await coursesCollection.findOne({
+    return await coursesCollection.findOne({
       id,
     });
-    if (foundCours) {
-      return foundCours;
-    } else {
-      return undefined;
-    }
   },
 
   async updateCourse(id: number, title: string): Promise<boolean> {

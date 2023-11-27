@@ -10,9 +10,9 @@ import {
   RequestQuery,
 } from "../types";
 import { getCourseViewModel } from "../utils/getCourseViewModel";
-import { coursesRepository } from "../repositories/courses-repositories";
 import { body } from "express-validator";
 import { titleValidationMiddleware } from "../middlewares/title-validation-middleware";
+import { coursesServises } from "../servises/courses.servises";
 
 export const getCoursesRouter = () => {
   const router = express.Router();
@@ -33,10 +33,12 @@ export const getCoursesRouter = () => {
       req: RequestBody<{ title: string }>,
       res: Response<CourseViewModel | Errors>
     ) => {
-      const createCours = await coursesRepository.createCourse(req.body.title);
-      res
-        .status(HTTP_STATUS.CREATED_201)
-        .json({ id: createCours.id, title: createCours.title });
+      const createCours = await coursesServises.createCourse(req.body.title);
+      return res.status(HTTP_STATUS.CREATED_201).json({
+        id: createCours.id,
+        title: createCours.title,
+        _id: createCours._id,
+      });
     }
   );
 
@@ -46,11 +48,9 @@ export const getCoursesRouter = () => {
       req: RequestQuery<{ title: string }>,
       res: Response<CourseViewModel[]>
     ) => {
-      const foudCoursTitle = await coursesRepository.findCourse(
-        req.query.title
-      );
+      const foudCoursTitle = await coursesServises.findCourse(req.query.title);
 
-      res.json(foudCoursTitle.map(getCourseViewModel));
+      return res.json(foudCoursTitle.map(getCourseViewModel));
     }
   );
 
@@ -60,16 +60,15 @@ export const getCoursesRouter = () => {
       req: RequestParams<URIParamsIdCourseModel>,
       res: Response<CourseViewModel>
     ) => {
-      const foundCourse = await coursesRepository.findCourseById(
+      const foundCourse = await coursesServises.findCourseById(
         Number(req.params.id)
       );
 
       if (!foundCourse) {
-        res.sendStatus(HTTP_STATUS.NOT_FOUND_404);
-        return;
+        return res.sendStatus(HTTP_STATUS.NOT_FOUND_404);
       }
 
-      res.json(getCourseViewModel(foundCourse));
+      return res.json(getCourseViewModel(foundCourse));
     }
   );
 
@@ -79,7 +78,7 @@ export const getCoursesRouter = () => {
       req: RequestParams<URIParamsIdCourseModel>,
       res: Response<CourseViewModel>
     ) => {
-      const isDeleteCourse = await coursesRepository.deleteCourse(
+      const isDeleteCourse = await coursesServises.deleteCourse(
         Number(req.params.id)
       );
 
@@ -97,30 +96,29 @@ export const getCoursesRouter = () => {
       req: RequestParamsBody<URIParamsIdCourseModel, { title: string }>,
       res: Response<CourseViewModel | Errors>
     ) => {
-      const updateCourse = await coursesRepository.updateCourse(
+      const updateCourse = await coursesServises.updateCourse(
         Number(req.params.id),
         req.body.title
       );
 
       if (!req.body.title) {
-        res.sendStatus(HTTP_STATUS.BAD_REQUEST_400);
-        return;
+        return res.sendStatus(HTTP_STATUS.BAD_REQUEST_400);
       }
 
       if (!updateCourse) {
-        res.sendStatus(HTTP_STATUS.NOT_FOUND_404);
-        return;
+        return res.sendStatus(HTTP_STATUS.NOT_FOUND_404);
       }
 
       if (updateCourse) {
-        const findCourse = await coursesRepository.findCourseById(
+        const findCourse = await coursesServises.findCourseById(
           Number(req.params.id)
         );
 
-        findCourse &&
-          res
-            .sendStatus(HTTP_STATUS.NO_CONTENT_204)
-            .json(getCourseViewModel(findCourse));
+        if (findCourse) {
+          return res
+            .json(getCourseViewModel(findCourse))
+            .sendStatus(HTTP_STATUS.NO_CONTENT_204);
+        }
       }
     }
   );

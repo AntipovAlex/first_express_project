@@ -1,11 +1,12 @@
+import { ObjectId } from "mongodb";
 import { DBType } from "../types";
 const { MongoClient } = require("mongodb");
 
 export const db: DBType = {
   courses: [
-    { id: 1, title: "front-end" },
-    { id: 2, title: "back-end" },
-    { id: 3, title: "QA Auto" },
+    { id: 1, title: "front-end", _id: new ObjectId() },
+    { id: 2, title: "back-end", _id: new ObjectId() },
+    { id: 3, title: "QA Auto", _id: new ObjectId() },
   ],
 };
 

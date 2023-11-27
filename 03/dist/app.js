@@ -9,7 +9,7 @@ const courses_1 = require("./routers/courses");
 const home_1 = require("./routers/home");
 const delete_db_1 = require("./routers/delete-db");
 exports.app = (0, express_1.default)();
-exports.port = process.env.PORT || 3000;
+exports.port = process.env.PORT || 5000;
 const appMiddelware = express_1.default.json();
 exports.app.use(appMiddelware);
 exports.app.use("/courses", (0, courses_1.getCoursesRouter)());

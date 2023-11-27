@@ -1,7 +1,8 @@
 import { Request } from "express";
 import { ValidationError } from "express-validator";
+import { ObjectId } from "mongodb";
 
-export type Course = { id: number; title: string };
+export type Course = { id: number; title: string; _id: ObjectId };
 
 export type RequestBody<B> = Request<{}, {}, B>;
 export type RequestQuery<Q> = Request<{}, {}, {}, Q>;
